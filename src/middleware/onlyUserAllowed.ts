@@ -4,21 +4,7 @@ import type { RequestHandler } from "express";
 
 // export declare type TypedRequest = Request<any, any, any, any>;
 
-type user = {} & AccessTokenPayloadType;
-
-type GenericRequestHandler = RequestHandler<ParamsDictionary, any, any, any>;
-type ResponseWithUser = Parameters<GenericRequestHandler>[1] & {
-  locals: {
-    user: user;
-  };
-};
-type RequestHandlerWithChangedParams = (
-  req: Parameters<GenericRequestHandler>[0],
-  res: ResponseWithUser,
-  next: Parameters<GenericRequestHandler>[2]
-) => void;
-
-const isUserAllowed = () => {
+const onlyUserAllowed = () => {
   const authMiddleware: RequestHandlerWithChangedParams = (req, res, next) => {
     const token = req.headers?.authorization;
     if (!token) {
@@ -57,4 +43,18 @@ const isUserAllowed = () => {
   return authMiddleware;
 };
 
-export default isUserAllowed;
+export default onlyUserAllowed;
+
+type user = AccessTokenPayloadType;
+
+type GenericRequestHandler = RequestHandler<ParamsDictionary, any, any, any>;
+type ResponseWithUser = Parameters<GenericRequestHandler>[1] & {
+  locals: {
+    user: user;
+  };
+};
+type RequestHandlerWithChangedParams = (
+  req: Parameters<GenericRequestHandler>[0],
+  res: ResponseWithUser,
+  next: Parameters<GenericRequestHandler>[2]
+) => void;

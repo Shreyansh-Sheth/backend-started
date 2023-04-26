@@ -23,7 +23,10 @@ authRouter.post(
 
         if (dbUser && dbUser.verified) {
           return res.status(409).json({
-            message: "Email already exists",
+            error: {
+              code: 409,
+              message: "User already exists",
+            },
           });
         }
         if (dbUser && !dbUser.verified) {
@@ -51,7 +54,9 @@ authRouter.post(
           },
         });
         return res.status(201).json({
-          message: "User Created",
+          data: {
+            message: "User created successfully",
+          },
         });
       });
       return;
@@ -85,14 +90,16 @@ authRouter.post(
       });
       if (!user) {
         return res.status(403).json({
-          message: "Invalid Credentials",
+          error: {
+            code: 403,
+            message: "Invalid Credentials",
+          },
         });
       }
       const tokens = await getTokens({
         id: user.provider.user.id,
       });
       res.status(200).json({
-        message: "Login Successful",
         data: tokens,
       });
     });
@@ -115,7 +122,10 @@ authRouter.post(
       });
       if (!provider) {
         return res.status(403).json({
-          message: "Invalid OTP",
+          error: {
+            code: 403,
+            message: "Invalid OTP",
+          },
         });
       }
 
@@ -144,7 +154,6 @@ authRouter.post(
         id: userData.provider.user.id,
       });
       res.status(200).json({
-        message: "OTP Verified",
         data: tokens,
       });
       //

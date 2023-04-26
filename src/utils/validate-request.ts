@@ -1,6 +1,7 @@
 import { Request, RequestHandler, Response } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
 import { z, ZodEffects, ZodError, ZodSchema, ZodType, ZodTypeDef } from "zod";
+import { ExpressTypedResponse } from "../types/express-global";
 
 type NonReadOnly<T> = { -readonly [P in keyof T]: NonReadOnly<T[P]> };
 
@@ -43,11 +44,20 @@ type ErrorListItem = {
 
 export const sendErrors: (
   errors: Array<ErrorListItem>,
-  res: Response
+  res: ExpressTypedResponse
 ) => void = (errors, res) => {
-  return res
-    .status(400)
-    .send(errors.map((error) => ({ type: error.type, errors: error.errors })));
+  return res.status(400).json({
+    error: {
+      code: 400,
+      message: "Validation Error",
+      data: errors
+        .flatMap((e) => e.errors.issues)
+        .map((e) => ({
+          field: typeof e.path[0] !== undefined ? e.path[0] : "root",
+          message: e.message,
+        })),
+    },
+  });
 };
 export const sendError: (error: ErrorListItem, res: Response) => void = (
   error,

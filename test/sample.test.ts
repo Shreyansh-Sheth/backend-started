@@ -1,14 +1,7 @@
-import app from "../src/app";
-import { beforeEach, describe, it } from "vitest";
-import request from "supertest";
+import { describe, it } from "vitest";
+import { api } from "./helpers";
 describe("Main Test For ALl", () => {
-  let api: request.SuperTest<request.Test>;
-
-  beforeEach(() => {
-    api = request(app);
-  });
-
   it("Hello World", async () => {
-    api.get("/").expect(200);
+    api().get("/").expect(200);
   });
 });

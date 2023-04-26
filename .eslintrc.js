@@ -3,16 +3,22 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: "standard-with-typescript",
-  overrides: [
-    {
-      files: ["src/**/*"],
-    },
-  ],
+
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  overrides: [],
+  parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  rules: {},
-  extends: ["prettier"],
+  plugins: ["@typescript-eslint"],
+  rules: {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "^_",
+      },
+    ],
+  },
 };

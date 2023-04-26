@@ -1,21 +1,15 @@
 import { Router } from "express";
-import { z } from "zod";
-import isUserAllowed from "../middleware/isUserAllowed";
-import { validateRequestBody } from "../utils/validate-request";
 import authRouter from "./auth";
+import onlyUserAllowed from "../middleware/onlyUserAllowed";
 const router = Router();
-router.get("/", (req, res) => {});
+
 router.use("/auth", authRouter);
 
-router.get(
-  "/",
-  validateRequestBody(
-    z.object({
-      name: z.string(),
-    })
-  ),
-  isUserAllowed(),
-  (req, res) => {}
-);
-
+router.get("/", onlyUserAllowed(), (req, res) => {
+  res.json({
+    data: {
+      message: "Hello World From Protected Route",
+    },
+  });
+});
 export default router;

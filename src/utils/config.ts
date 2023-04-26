@@ -1,11 +1,7 @@
 import { z } from "zod";
-// This Files Adds All The Config That This Projects Needs
 import * as dotenv from "dotenv";
-import path from "path";
-dotenv.config({
-  path: path.join(__dirname, "..", ".env"),
-  debug: true,
-});
+
+dotenv.config({});
 
 const configValidation = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]),
@@ -19,5 +15,5 @@ const configValidation = z.object({
   REFRESH_TOKEN_EXPIRY: z.string(),
 });
 const config = configValidation.parse(process.env);
-
+console.log(config);
 export default config;

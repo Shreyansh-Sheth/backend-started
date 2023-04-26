@@ -9,7 +9,7 @@ type TypedResponse =
         data?: Record<string, any>;
       };
     };
-
+export type ExpressTypedResponse = Response<TypedResponse>;
 export {};
 declare module "express-serve-static-core" {
   //request handler
@@ -18,7 +18,7 @@ declare module "express-serve-static-core" {
     ResBody = any,
     ReqBody = any,
     ReqQuery = ParsedQs,
-    LocalsObj extends Record<string, any> = Record<string, any>
+    LocalsObj extends Record<string, any> = unknown
   > {
     (
       req: Request<P, ResBody, ReqBody, ReqQuery, Locals>,
