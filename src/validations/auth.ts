@@ -1,9 +1,10 @@
 import { z } from "zod";
 
-const Email = z.string().email();
-const Password = z.string().min(8).max(25);
-const Username = z.string().min(3).max(25);
-const Otp = z.string().min(6).max(6);
+const Email = z.string().trim().email();
+const Password = z.string().trim().min(8).max(25);
+const Username = z.string().trim().min(3).max(25);
+const Otp = z.string().trim().min(6).max(6);
+const RefreshToken = z.string().min(1).trim();
 export const registerSchema = z
   .object({
     username: Username,
@@ -53,3 +54,11 @@ export const resetPasswordSchema = z
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
+export const LogoutValidation = z.object({
+  refreshToken: RefreshToken,
+});
+
+export const RefreshTokenValidation = z.object({
+  refreshToken: RefreshToken,
+});

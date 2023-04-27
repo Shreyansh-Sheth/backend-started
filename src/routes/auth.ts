@@ -3,6 +3,7 @@ import db from "../utils/db";
 import RandomOtp from "../utils/randomOtp";
 import { getTokens } from "../utils/token";
 import { validateRequestBody } from "../utils/validate-request";
+import { LogoutValidation, RefreshTokenValidation } from "../validations/auth";
 import { authValidation } from "../validations/index";
 const authRouter = Router();
 
@@ -97,8 +98,15 @@ authRouter.post(
         });
       }
       const tokens = await getTokens({
-        id: user.provider.user.id,
+        sub: user.provider.user.id,
       });
+      await tx.sessions.create({
+        data: {
+          refreshToken: tokens.refreshToken,
+          userId: user.provider.user.id,
+        },
+      });
+
       res.status(200).json({
         data: tokens,
       });
@@ -151,8 +159,15 @@ authRouter.post(
       });
 
       const tokens = await getTokens({
-        id: userData.provider.user.id,
+        sub: userData.provider.user.id,
       });
+      await tx.sessions.create({
+        data: {
+          refreshToken: tokens.refreshToken,
+          userId: userData.provider.user.id,
+        },
+      });
+
       res.status(200).json({
         data: tokens,
       });
@@ -161,4 +176,92 @@ authRouter.post(
   }
 );
 
+authRouter.post(
+  "/logout",
+  validateRequestBody(LogoutValidation),
+  async (req, res) => {
+    await db.sessions.update({
+      where: {
+        refreshToken: req.body.refreshToken,
+      },
+      data: {
+        status: "INACTIVE",
+      },
+    });
+    res.json({
+      data: {
+        message: "Logged out successfully",
+      },
+    });
+  }
+);
+authRouter.post(
+  "/refresh-tokens",
+  validateRequestBody(RefreshTokenValidation),
+  async (req, res) => {
+    await db.$transaction(async (tx) => {
+      const session = await tx.sessions.findFirst({
+        where: {
+          refreshToken: req.body.refreshToken,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      });
+      if (!session) {
+        return res.status(403).json({
+          error: {
+            code: 403,
+            message: "Invalid refresh token",
+          },
+        });
+      }
+      if (session.status === "INACTIVE") {
+        //NOTE: Security measure to prevent replay attacks
+        await tx.sessions.updateMany({
+          where: {
+            userId: session.user.id,
+            status: "ACTIVE",
+          },
+          data: {
+            status: "INACTIVE",
+          },
+        });
+        res.status(403).json({
+          error: {
+            code: 403,
+            message: "Invalid refresh token",
+          },
+        });
+      }
+
+      const tokens = await getTokens({
+        sub: session.user.id,
+      });
+      await tx.sessions.create({
+        data: {
+          refreshToken: tokens.refreshToken,
+          userId: session.user.id,
+        },
+      });
+
+      //Make Old Token Inactive So No One Can Use It Again
+      await tx.sessions.update({
+        where: {
+          refreshToken: req.body.refreshToken,
+        },
+        data: {
+          status: "INACTIVE",
+        },
+      });
+      res.status(200).json({
+        data: tokens,
+      });
+    });
+  }
+);
 export default authRouter;

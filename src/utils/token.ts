@@ -1,20 +1,20 @@
 import { sign, verify } from "jsonwebtoken";
 import config from "./config";
 export type AccessTokenPayloadType = {
-  id: string;
+  sub: string;
 };
 
 export type RefreshTokenPayloadType = {
-  id: string;
+  sub: string;
 };
 type PayloadType = AccessTokenPayloadType & RefreshTokenPayloadType;
 
 export const getTokens = (payload: PayloadType) => {
   const accessToken = signAccessToken({
-    id: payload.id,
+    sub: payload.sub,
   });
   const refreshToken = signRefreshToken({
-    id: payload.id,
+    sub: payload.sub,
   });
   return { accessToken, refreshToken };
 };
