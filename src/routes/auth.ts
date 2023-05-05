@@ -180,23 +180,27 @@ authRouter.post(
   "/logout",
   validateRequestBody(LogoutValidation),
   async (req, res) => {
-    await db.sessions.update({
-      where: {
-        refreshToken: req.body.refreshToken,
-      },
-      data: {
-        status: "INACTIVE",
-      },
-    });
-    res.json({
-      data: {
-        message: "Logged out successfully",
-      },
-    });
+    try {
+      await db.sessions.update({
+        where: {
+          refreshToken: req.body.refreshToken,
+        },
+        data: {
+          status: "INACTIVE",
+        },
+      });
+      res.json({
+        data: {
+          message: "Logged out successfully",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 );
 authRouter.post(
-  "/refresh-tokens",
+  "/refresh-token",
   validateRequestBody(RefreshTokenValidation),
   async (req, res) => {
     await db.$transaction(async (tx) => {
@@ -231,7 +235,7 @@ authRouter.post(
             status: "INACTIVE",
           },
         });
-        res.status(403).json({
+        return res.status(403).json({
           error: {
             code: 403,
             message: "Invalid refresh token",
@@ -239,7 +243,7 @@ authRouter.post(
         });
       }
 
-      const tokens = await getTokens({
+      const tokens = getTokens({
         sub: session.user.id,
       });
       await tx.sessions.create({

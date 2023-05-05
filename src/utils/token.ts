@@ -1,5 +1,6 @@
 import { sign, verify } from "jsonwebtoken";
 import config from "./config";
+import { randomUUID } from "crypto";
 export type AccessTokenPayloadType = {
   sub: string;
 };
@@ -20,7 +21,7 @@ export const getTokens = (payload: PayloadType) => {
 };
 
 const signToken = (payload: any, secret: string, expiry: string) => {
-  return sign(payload, secret, { expiresIn: expiry });
+  return sign(payload, secret, { expiresIn: expiry, jwtid: randomUUID() });
 };
 
 const verifyToken = <T>(token: string, secret: string) => {

@@ -15,5 +15,4 @@ const configValidation = z.object({
   REFRESH_TOKEN_EXPIRY: z.string(),
 });
 const config = configValidation.parse(process.env);
-console.log(config);
 export default config;
